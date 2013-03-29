@@ -27,9 +27,6 @@ $wgExtensionCredits['antispam'][] = array(
 $wgHooks['UserCreateForm'][] = 'efSimpleAntiSpamRegField';
 $wgHooks['AbortNewAccount'][] = 'efSimpleAntiSpamRegCheck';
 
-$wgHooks['EditPage::showEditForm:fields'][] = 'efSimpleAntiSpamField';
-$wgHooks['EditPage::attemptSave'][] = 'efSimpleAntiSpamCheck';
-
 /**
  * Add a field
  */
