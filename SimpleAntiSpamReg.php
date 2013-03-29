@@ -24,8 +24,8 @@ $wgExtensionCredits['antispam'][] = array(
 	'version' => '1.0',
 );
 
-$wgHooks['UserCreateForm'] = 'efSimpleAntiSpamRegField';
-$wgHooks['AbortNewAccount'] = 'efSimpleAntiSpamRegCheck';
+$wgHooks['UserCreateForm'][] = 'efSimpleAntiSpamRegField';
+$wgHooks['AbortNewAccount'][] = 'efSimpleAntiSpamRegCheck';
 
 $wgHooks['EditPage::showEditForm:fields'][] = 'efSimpleAntiSpamField';
 $wgHooks['EditPage::attemptSave'][] = 'efSimpleAntiSpamCheck';
@@ -35,9 +35,9 @@ $wgHooks['EditPage::attemptSave'][] = 'efSimpleAntiSpamCheck';
  */
 function efSimpleAntiSpamRegField( &$template ) {
 	$template->set(
-		'header', $template->get( 'header' ) .
+		'header', $template->data['header'] .
 		'<div style="display: none;"><label for="wpASR">Password</label>'.
-		'<input type=\"password\" name=\"wpASR\" id=\"wpASR\" value=\"\" /></div>'
+		'<input type="password" name="wpASR" id="wpASR" value="" /></div>'
 	);
 	return true;
 }
@@ -47,11 +47,11 @@ function efSimpleAntiSpamRegField( &$template ) {
  */
 function efSimpleAntiSpamRegCheck( $u, &$abortError ) {
 	global $wgRequest, $wgUser;
-	$spam = $wgRequest->getText( 'wpASR' );
+	$spam = $wgRequest->getVal( 'wpASR' );
 	if ( $spam !== '' ) {
 		wfDebugLog( 'SimpleAntiSpamReg', wfGetIP() . ': registration denied' );
 		wfHttpError( 403, 'Forbidden', 'Registration denied.' );
-		return false;
+		exit;
 	}
 	return true;
 }
