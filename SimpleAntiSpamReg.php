@@ -1,7 +1,8 @@
 <?php
 /**
  * SimpleAntiSpamReg MediaWiki extension
- * Adds a simple spambot check to registration form. Does not affect real users.
+ * Adds a stylesheet link to registration form and requires that
+ * the client requests it before allowing registration.
  * (c) Vitaliy Filippov, 2013
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,29 +41,52 @@ $wgExtensionCredits['antispam'][] = array(
 
 $wgHooks['UserCreateForm'][] = 'efSimpleAntiSpamRegField';
 $wgHooks['AbortNewAccount'][] = 'efSimpleAntiSpamRegCheck';
+$wgAjaxExportList[] = 'efAsrCss';
 
 /**
- * Add a field
+ * Add a fake stylesheet link
  */
-function efSimpleAntiSpamRegField( &$template ) {
-	$template->set(
-		'header', $template->data['header'] .
-		'<div style="display: none;"><label for="wpASR">Password</label>'.
-		'<input type="password" name="wpASR" id="wpASR" value="" /></div>'
+function efSimpleAntiSpamRegField( $template ) {
+	global $wgOut, $wgServer, $wgScriptPath;
+	if ( session_id() === '' ) {
+		wfSetupSession();
+	}
+	$wgOut->addScript(
+		'<link rel="stylesheet" type="text/css" href="'.
+		$wgServer.$wgScriptPath.'?action=ajax&rs=efAsrCss"></script>'
 	);
 	return true;
 }
 
 /**
- * Check for the field and send 403 Forbidden if it isn't empty
+ * Remember link visit in the session
+ */
+function efAsrCss() {
+	if ( session_id() === '' ) {
+		wfSetupSession();
+	}
+	$_SESSION['asr_visit'] = 1;
+	header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+	header('Cache-Control: no-store, no-cache, must-revalidate');
+	header('Cache-Control: post-check=0, pre-check=0', false);
+	header('Pragma: no-cache');
+	header('Content-Type: text/css');
+	print "body { }";
+	exit;
+}
+
+/**
+ * Check for visit and send 403 Forbidden if it isn't empty
  */
 function efSimpleAntiSpamRegCheck( $u, &$abortError ) {
-	global $wgRequest, $wgUser;
-	$spam = $wgRequest->getVal( 'wpASR' );
-	if ( $spam !== '' ) {
+	if ( session_id() === '' ) {
+		wfSetupSession();
+	}
+	if ( empty( $_SESSION['asr_visit'] ) ) {
 		wfDebugLog( 'SimpleAntiSpamReg', wfGetIP() . ': registration denied' );
-		wfHttpError( 403, 'Forbidden', 'Registration denied.' );
+		wfHttpError( 403, 'Forbidden', 'Registration denied. You must use a modern browser for registration.' );
 		exit;
 	}
+	$_SESSION['asr_visit'] = 0;
 	return true;
 }
