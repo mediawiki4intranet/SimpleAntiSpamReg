@@ -47,13 +47,13 @@ $wgAjaxExportList[] = 'efAsrCss';
  * Add a fake stylesheet link
  */
 function efSimpleAntiSpamRegField( $template ) {
-	global $wgOut, $wgServer, $wgScriptPath;
+	global $wgOut, $wgServer, $wgScript;
 	if ( session_id() === '' ) {
 		wfSetupSession();
 	}
 	$wgOut->addScript(
 		'<link rel="stylesheet" type="text/css" href="'.
-		$wgServer.$wgScriptPath.'?action=ajax&rs=efAsrCss"></script>'
+		$wgServer.$wgScript.'?action=ajax&rs=efAsrCss"></script>'
 	);
 	return true;
 }
