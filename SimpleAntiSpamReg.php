@@ -62,10 +62,11 @@ function efSimpleAntiSpamRegField( $template ) {
  * Remember link visit in the session
  */
 function efAsrCss() {
+	global $wgRequest;
 	if ( session_id() === '' ) {
 		wfSetupSession();
 	}
-	$_SESSION['asr_visit'] = 1;
+	$wgRequest->setSessionData( 'asr_visit', 1 );
 	header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 	header('Cache-Control: no-store, no-cache, must-revalidate');
 	header('Cache-Control: post-check=0, pre-check=0', false);
@@ -79,14 +80,15 @@ function efAsrCss() {
  * Check for visit and send 403 Forbidden if it isn't empty
  */
 function efSimpleAntiSpamRegCheck( $u, &$abortError ) {
+	global $wgRequest;
 	if ( session_id() === '' ) {
 		wfSetupSession();
 	}
-	if ( empty( $_SESSION['asr_visit'] ) ) {
+	if ( !$wgRequest->getSessionData( 'asr_visit' ) ) {
 		wfDebugLog( 'SimpleAntiSpamReg', wfGetIP() . ': registration denied' );
 		wfHttpError( 403, 'Forbidden', 'Registration denied. You must use a modern browser for registration.' );
 		exit;
 	}
-	$_SESSION['asr_visit'] = 0;
+	$wgRequest->setSessionData( 'asr_visit', 0 );
 	return true;
 }
